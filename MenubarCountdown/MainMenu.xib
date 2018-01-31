@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="9059" systemVersion="15B42" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13529" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="9059"/>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13529"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication"/>
@@ -17,13 +18,13 @@
                 <menuItem title="Start…" toolTip="Start a countdown" id="451">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="showStartTimerDialog:" target="458" id="490"/>
+                        <action selector="showStartTimerDialogWithSender:" target="458" id="0gI-3B-PcN"/>
                     </connections>
                 </menuItem>
                 <menuItem title="Stop" toolTip="Stop the countdown" id="452">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="stopTimer:" target="458" id="460"/>
+                        <action selector="stopTimerWithSender:" target="458" id="oiJ-Xd-YLh"/>
                         <binding destination="458" name="enabled" keyPath="isTimerRunning" id="xpM-eL-l5I"/>
                     </connections>
                 </menuItem>
@@ -31,14 +32,14 @@
                 <menuItem title="Pause" id="492">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="pauseTimer:" target="458" id="493"/>
+                        <action selector="pauseTimerWithSender:" target="458" id="JFk-Mg-kP9"/>
                         <binding destination="458" name="enabled" keyPath="canPause" id="494"/>
                     </connections>
                 </menuItem>
                 <menuItem title="Resume" enabled="NO" toolTip="Resume a stopped countdown" id="465">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="resumeTimer:" target="458" id="477"/>
+                        <action selector="resumeTimerWithSender:" target="458" id="eZ4-h7-nhH"/>
                         <binding destination="458" name="enabled" keyPath="canResume" id="474"/>
                     </connections>
                 </menuItem>
@@ -46,7 +47,7 @@
                 <menuItem title="About Menubar Countdown" toolTip="Display version, copyright, and licensing information" id="471">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="showAboutPanel:" target="458" id="478"/>
+                        <action selector="showAboutPanelWithSender:" target="458" id="go0-ov-mTr"/>
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="470"/>
