@@ -54,33 +54,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet var timerExpiredAlertController: TimerExpiredAlertController!
 
     override init() {
-        UserDefaults.registerUserDefaults()
+        KJUserDefaults.registerUserDefaults()
     }
 
     func applicationDidFinishLaunching(aNotification: NSNotification) {
-        Log.debug("application did finish launching")
+        Log.debug(message: "application did finish launching")
 
         stopwatch.reset()
 
-        let statusBar = NSStatusBar.systemStatusBar()
-        statusItem = statusBar.statusItemWithLength(NSVariableStatusItemLength)
+        let statusBar = NSStatusBar.system()
+        statusItem = statusBar.statusItem(withLength: NSVariableStatusItemLength)
 
         statusItemView = StatusItemView()
         statusItemView.statusItem = statusItem
         statusItemView.menu = menu
-        statusItemView.toolTip = NSLocalizedString("Menubar Countdown",
-            comment: "Status Item Tooltip")
+        statusItemView.toolTip = NSLocalizedString(
+            "Menubar Countdown",
+            comment: "Status Item Tooltip"
+        )
         statusItem.view = statusItemView
 
-        updateStatusItemTitle(0)
+        updateStatusItemTitle(timeRemaining: 0)
 
-        if NSUserDefaults.standardUserDefaults().boolForKey(UserDefaults.ShowStartDialogOnLaunchKey) {
-            showStartTimerDialog(self)
+        if UserDefaults.standard.bool(forKey: KJUserDefaults.ShowStartDialogOnLaunchKey) {
+            showStartTimerDialog(sender: self)
         }
     }
 
     func applicationWillTerminate(aNotification: NSNotification) {
-        Log.debug("application will terminate")
+        Log.debug(message: "application will terminate")
     }
 
     // MARK: Timer updating
@@ -89,33 +91,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let elapsed = stopwatch.elapsedTimeInterval()
         let intervalToNextSecond = ceil(elapsed) - elapsed
 
-        NSTimer.scheduledTimerWithTimeInterval(intervalToNextSecond,
+        Timer.scheduledTimer(
+            timeInterval: intervalToNextSecond,
             target: self,
-            selector: Selector("nextSecondTimerDidFire:"),
+            selector: Selector(("nextSecondTimerDidFire:")),
             userInfo: nil,
-            repeats: false)
+            repeats: false
+        )
     }
 
-    func nextSecondTimerDidFire(timer: NSTimer) {
+    func nextSecondTimerDidFire(timer: Timer) {
         if isTimerRunning {
-            secondsRemaining = Int(round(NSTimeInterval(timerSettingSeconds) - stopwatch.elapsedTimeInterval()))
+            secondsRemaining = Int(round(TimeInterval(timerSettingSeconds) - stopwatch.elapsedTimeInterval()))
             DTraceTimerTick(Int32(secondsRemaining))
 
             if secondsRemaining <= 0 {
                 timerDidExpire()
-            }
-            else {
-                updateStatusItemTitle(secondsRemaining)
+            } else {
+                updateStatusItemTitle(timeRemaining: secondsRemaining)
                 waitForNextSecond()
             }
-        }
-        else {
-            Log.debug("ignoring tick because timer is not running")
+        } else {
+            Log.debug(message: "ignoring tick because timer is not running")
         }
     }
 
-    func updateStatusItemTitle(var timeRemaining: Int) {
-        let showSeconds = NSUserDefaults.standardUserDefaults().boolForKey(UserDefaults.ShowSeconds)
+    func updateStatusItemTitle( timeRemaining: Int) {
+        var timeRemaining = timeRemaining
+        let showSeconds = UserDefaults.standard.bool(forKey: KJUserDefaults.ShowSeconds)
+
         if (!showSeconds) {
             // Round timeRemaining up to the next minute
             let minutes = Double(timeRemaining) / 60.0
@@ -129,12 +133,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // TODO: Use localized time-formatting function
         var timeString: String
+
         if showSeconds {
             timeString = NSString(format: "%02d:%02d:%02d", hours, minutes, seconds) as String
-        }
-        else {
+        } else {
             timeString = NSString(format: "%02d:%02d", hours, minutes) as String
         }
+
         statusItemView.title = timeString
     }
 
@@ -146,106 +151,118 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         canPause = false
         canResume = false
 
-        updateStatusItemTitle(0)
+        updateStatusItemTitle(timeRemaining: 0)
 
-        let defaults = NSUserDefaults.standardUserDefaults()
+        let defaults = UserDefaults.standard
 
-        if defaults.boolForKey(UserDefaults.BlinkOnExpirationKey) {
+        if defaults.bool(forKey: KJUserDefaults.BlinkOnExpirationKey) {
             statusItemView.isTitleBlinking = true
         }
 
-        if defaults.boolForKey(UserDefaults.PlayAlertSoundOnExpirationKey) {
+        if defaults.bool(forKey: KJUserDefaults.PlayAlertSoundOnExpirationKey) {
             playAlertSound()
         }
 
-        if defaults.boolForKey(UserDefaults.AnnounceExpirationKey) {
+        if defaults.bool(forKey: KJUserDefaults.AnnounceExpirationKey) {
             announceTimerExpired()
         }
 
-        if defaults.boolForKey(UserDefaults.ShowAlertWindowOnExpirationKey) {
+        if defaults.bool(forKey: KJUserDefaults.ShowAlertWindowOnExpirationKey) {
             showTimerExpiredAlert()
         }
     }
 
     func playAlertSound() {
         if isTimerRunning && (secondsRemaining < 1) {
-            Log.debug("play alert sound")
+            Log.debug(message: "play alert sound")
             AudioServicesPlayAlertSound(kUserPreferredAlert);
 
-            let defaults = NSUserDefaults.standardUserDefaults()
-            if defaults.boolForKey(UserDefaults.RepeatAlertSoundOnExpirationKey) {
-                var repeatInterval = NSTimeInterval(defaults.integerForKey(UserDefaults.AlertSoundRepeatIntervalKey))
+            let defaults = UserDefaults.standard
+            if defaults.bool(forKey: KJUserDefaults.RepeatAlertSoundOnExpirationKey) {
+                var repeatInterval = TimeInterval(defaults.integer(forKey: KJUserDefaults.AlertSoundRepeatIntervalKey))
+
                 if repeatInterval < 1.0 {
                     repeatInterval = 1.0
                 }
-                Log.debug("schedule alert sound repeat \(repeatInterval)s")
-                NSTimer.scheduledTimerWithTimeInterval(repeatInterval,
+
+                Log.debug(message: "schedule alert sound repeat \(repeatInterval)s")
+                Timer.scheduledTimer(
+                    timeInterval: repeatInterval,
                     target: self,
-                    selector: Selector("playAlertSound"),
+                    selector: #selector(AppDelegate.playAlertSound),
                     userInfo: nil,
-                    repeats: false)
+                    repeats: false
+                )
             }
         }
     }
 
     func announceTimerExpired() {
         let text = announcementText()
-        Log.debug("speaking announcement \"\(text)\"")
+        Log.debug(message: "speaking announcement \"\(text)\"")
+
         if let synth = NSSpeechSynthesizer(voice: nil) {
-            synth.startSpeakingString(text)
-        }
-        else {
-            Log.error("unable to initialize speech synthesizer")
+            synth.startSpeaking(text)
+        } else {
+            Log.error(message: "unable to initialize speech synthesizer")
         }
     }
 
     func announcementText() -> String {
-        var result = NSUserDefaults.standardUserDefaults().stringForKey(UserDefaults.AnnouncementTextKey)
+        var result = UserDefaults.standard.string(forKey: KJUserDefaults.AnnouncementTextKey)
         if (result == nil) || result!.isEmpty {
-            result = NSLocalizedString("The Menubar Countdown timer has reached zero.",
-                comment: "Default announcement text")
+            result = NSLocalizedString(
+                "The Menubar Countdown timer has reached zero.",
+                comment: "Default announcement text"
+            )
         }
         return result!
     }
 
     func showTimerExpiredAlert() {
-        Log.debug("show timer-expired alert")
+        Log.debug(message: "show timer-expired alert")
 
-        NSApp.activateIgnoringOtherApps(true)
+        NSApp.activate(ignoringOtherApps: true)
 
         if timerExpiredAlertController == nil {
-            NSBundle.mainBundle().loadNibNamed("TimerExpiredAlert",
+            Bundle.main.loadNibNamed(
+                "TimerExpiredAlert",
                 owner: self,
-                topLevelObjects: nil)
+                topLevelObjects: nil
+            )
             assert(timerExpiredAlertController != nil, "timerExpiredAlertController outlet must be set")
         }
+
         timerExpiredAlertController.showAlert()
     }
 
     // MARK: Menu item and button event handlers
 
     @IBAction func showStartTimerDialog(sender: AnyObject) {
-        Log.debug("show start timer dialog")
+        Log.debug(message: "show start timer dialog")
 
-        dismissTimerExpiredAlert(sender)
+        dismissTimerExpiredAlert(sender: sender)
 
         if startTimerDialogController == nil {
-            NSBundle.mainBundle().loadNibNamed("StartTimerDialog",
+            Bundle.main.loadNibNamed(
+                "StartTimerDialog",
                 owner: self,
-                topLevelObjects: nil)
+                topLevelObjects: nil
+            )
             assert(startTimerDialogController != nil, "startTimerDialogController must be set")
         }
+
         startTimerDialogController.showDialog()
     }
 
     @IBAction func startTimerDialogStartButtonWasClicked(sender: AnyObject) {
-        Log.debug("start button was clicked")
+        Log.debug(message: "start button was clicked")
 
-        dismissTimerExpiredAlert(sender)
+        dismissTimerExpiredAlert(sender: sender)
 
-        startTimerDialogController.dismissDialog(sender)
+        startTimerDialogController.dismissDialog(sender: sender)
 
-        NSUserDefaults.standardUserDefaults().synchronize()
+        UserDefaults.standard.synchronize()
 
         timerSettingSeconds = Int(startTimerDialogController.timerInterval)
         DTraceStartTimer(Int32(timerSettingSeconds))
@@ -255,14 +272,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         canResume = true
         stopwatch.reset()
 
-        updateStatusItemTitle(timerSettingSeconds)
+        updateStatusItemTitle(timeRemaining: timerSettingSeconds)
         statusItemView.showTitle()
 
         waitForNextSecond()
     }
 
     @IBAction func stopTimer(sender: AnyObject) {
-        Log.debug("stop timer")
+        Log.debug(message: "stop timer")
         DTraceStartTimer(Int32(secondsRemaining))
 
         isTimerRunning = false
@@ -274,7 +291,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @IBAction func pauseTimer(sender: AnyObject) {
-        Log.debug("pause timer")
+        Log.debug(message: "pause timer")
         DTracePauseTimer(Int32(secondsRemaining))
 
         isTimerRunning = false
@@ -283,7 +300,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @IBAction func resumeTimer(sender: AnyObject) {
-        Log.debug("resume timer")
+        Log.debug(message: "resume timer")
         DTraceResumeTimer(Int32(secondsRemaining))
 
         isTimerRunning = true
@@ -294,29 +311,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         stopwatch.reset()
 
-        updateStatusItemTitle(timerSettingSeconds)
+        updateStatusItemTitle(timeRemaining: timerSettingSeconds)
         statusItemView.showTitle()
 
         waitForNextSecond()
     }
 
     @IBAction func dismissTimerExpiredAlert(sender: AnyObject) {
-        Log.debug("dismiss timer expired alert")
+        Log.debug(message: "dismiss timer expired alert")
+
         if timerExpiredAlertController != nil {
             timerExpiredAlertController.close()
         }
-        stopTimer(sender)
+
+        stopTimer(sender: sender)
     }
 
     @IBAction func restartCountdownWasClicked(sender: AnyObject) {
-        Log.debug("restart countdown was clicked")
-        dismissTimerExpiredAlert(sender)
-        showStartTimerDialog(sender)
+        Log.debug(message: "restart countdown was clicked")
+        dismissTimerExpiredAlert(sender: sender)
+        showStartTimerDialog(sender: sender)
     }
 
     @IBAction func showAboutPanel(sender: AnyObject) {
-        Log.debug("show About panel")
-        NSApp.activateIgnoringOtherApps(true)
+        Log.debug(message: "show About panel")
+        NSApp.activate(ignoringOtherApps: true)
         NSApp.orderFrontStandardAboutPanel(sender)
     }
 }

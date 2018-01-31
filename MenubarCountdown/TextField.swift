@@ -33,28 +33,29 @@ import Cocoa
 /// http://stackoverflow.com/questions/970707/cocoa-keyboard-shortcuts-in-dialog-without-an-edit-menu
 
 class TextField: NSTextField {
-    override func performKeyEquivalent(event: NSEvent) -> Bool {
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
         // Map Command-X to Cut
         //     Command-C to Copy
         //     Command-V to Paste
         //     Command-A to Select All
         //     Command-Z to Undo
         //     Command-Shift-Z to Redo
-        if event.type == NSEventType.KeyDown {
-            let commandKeyMask = NSEventModifierFlags.CommandKeyMask.rawValue
-            let commandShiftKeyMask = commandKeyMask | NSEventModifierFlags.ShiftKeyMask.rawValue
+        if event.type == NSEventType.keyDown {
+
+            let commandKeyMask = NSEvent.ModifierFlags.command.rawValue // NSEventModifierFlags.CommandKeyMask.rawValue
+            let commandShiftKeyMask = commandKeyMask | NSEvent.ModifierFlags.shift.rawValue // NSEventModifierFlags.ShiftKeyMask.rawValue
 
             let modifierFlagsMask = event.modifierFlags.rawValue
-                & NSEventModifierFlags.DeviceIndependentModifierFlagsMask.rawValue
+                & NSEvent.ModifierFlags.deviceIndependentFlagsMask.rawValue // NSEventModifierFlags.DeviceIndependentModifierFlagsMask.rawValue
 
             if modifierFlagsMask == commandKeyMask {
                 if let chars = event.charactersIgnoringModifiers {
                     switch chars {
-                    case "x": return sendFirstResponderAction(Selector("cut:"))
-                    case "c": return sendFirstResponderAction(Selector("copy"))
-                    case "v": return sendFirstResponderAction(Selector("paste:"))
-                    case "a": return sendFirstResponderAction(Selector("selectAll:"))
-                    case "z": return sendFirstResponderAction(Selector("undo:"))
+                    case "x": return sendFirstResponderAction(action: #selector(NSText.cut(_:)))
+                    case "c": return sendFirstResponderAction(action: Selector("copy"))
+                    case "v": return sendFirstResponderAction(action: #selector(NSText.paste(_:)))
+                    case "a": return sendFirstResponderAction(action: #selector(NSResponder.selectAll(_:)))
+                    case "z": return sendFirstResponderAction(action: Selector(("undo:")))
                     default:  break
                     }
                 }
@@ -62,14 +63,14 @@ class TextField: NSTextField {
             else if modifierFlagsMask == commandShiftKeyMask {
                 if let chars = event.charactersIgnoringModifiers {
                     switch chars {
-                    case "Z": return sendFirstResponderAction(Selector("redo:"))
+                    case "Z": return sendFirstResponderAction(action: Selector(("redo:")))
                     default:  break
                     }
                 }
             }
         }
 
-        return super.performKeyEquivalent(event)
+        return super.performKeyEquivalent(with: event)
     }
 
     func sendFirstResponderAction(action: Selector) -> Bool {

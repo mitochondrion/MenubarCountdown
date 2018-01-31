@@ -42,7 +42,7 @@ import Cocoa
 ///
 /// The application can cause the title to blink by setting the `isTitleBlinking` property.
 ///
-class StatusItemView: NSView, NSMenuDelegate {
+class StatusItemView: NSView, NSMenuDelegate, CALayerDelegate {
     static let IconPaddingWidth = CGFloat(3)
     static let TitlePaddingWidth = CGFloat(6)
     static let TitlePaddingHeight = CGFloat(3)
@@ -92,15 +92,15 @@ class StatusItemView: NSView, NSMenuDelegate {
 
         backgroundLayer = self.layer
 
-        iconLayer = CALayer.newLayerWithContentsFromFileNamed("MenubarIcon.png")
+        iconLayer = CALayer.newLayerWithContentsFromFileNamed(name: "MenubarIcon.png")
         iconLayer.orientBottomLeft()
-        iconLayer.position = CGPointMake(StatusItemView.IconPaddingWidth, 0.0)
+        iconLayer.position = CGPoint(x: StatusItemView.IconPaddingWidth, y: 0.0)
         backgroundLayer.addSublayer(iconLayer)
 
-        highlightIconLayer = CALayer.newLayerWithContentsFromFileNamed("MenubarIconInverse.png")
+        highlightIconLayer = CALayer.newLayerWithContentsFromFileNamed(name: "MenubarIconInverse.png")
         highlightIconLayer.orientBottomLeft()
         highlightIconLayer.position = iconLayer.position
-        highlightIconLayer.hidden = true
+        highlightIconLayer.isHidden = true
         backgroundLayer.addSublayer(highlightIconLayer)
 
         titleLayer = makeTitleLayer()
@@ -112,10 +112,10 @@ class StatusItemView: NSView, NSMenuDelegate {
     func showIcon() {
         if isTitleVisible {
             isTitleVisible = false
-            titleLayer.hidden = true
+            titleLayer.isHidden = true
 
-            iconLayer.hidden = isMenuVisible
-            highlightIconLayer.hidden = !isMenuVisible
+            iconLayer.isHidden = isMenuVisible
+            highlightIconLayer.isHidden = !isMenuVisible
 
             updateStatusItemSize()
         }
@@ -125,12 +125,12 @@ class StatusItemView: NSView, NSMenuDelegate {
         if (!isTitleVisible) {
             isTitleVisible = true
 
-            iconLayer.hidden = true
-            highlightIconLayer.hidden = true
+            iconLayer.isHidden = true
+            highlightIconLayer.isHidden = true
 
             updateStatusItemSize()
 
-            titleLayer.hidden = false
+            titleLayer.isHidden = false
         }
     }
 
@@ -155,7 +155,7 @@ class StatusItemView: NSView, NSMenuDelegate {
         let titleBounds = titleBoundingRect()
         let desiredWidth = titleBounds.size.width + 2 * StatusItemView.TitlePaddingWidth
         let desiredHeight = self.bounds.size.height
-        newLayer.bounds = CGRectMake(0.0, 0.0, desiredWidth, desiredHeight)
+        newLayer.bounds = CGRect(x: 0.0, y: 0.0, width: desiredWidth, height: desiredHeight)
 
         // drawLayer:inContext: will set the layer's contents
         newLayer.delegate = self
@@ -168,41 +168,43 @@ class StatusItemView: NSView, NSMenuDelegate {
         let newTitleLayer = makeTitleLayer()
 
         if !isTitleVisible {
-            newTitleLayer.hidden = true
+            newTitleLayer.isHidden = true
         }
 
         let oldTitleLayer = titleLayer
         titleLayer = newTitleLayer
-        backgroundLayer.replaceSublayer(oldTitleLayer, with: newTitleLayer)
+        backgroundLayer.replaceSublayer(oldTitleLayer!, with: newTitleLayer)
     }
 
     func titleAttributes() -> [String : AnyObject] {
         return [
-            NSFontAttributeName: NSFont.menuBarFontOfSize(0),
+            NSFontAttributeName: NSFont.menuBarFont(ofSize: 0),
             NSForegroundColorAttributeName: titleForegroundColor()
         ]
     }
 
     func titleForegroundColor() -> NSColor {
-        if isMenuVisible   { return NSColor.whiteColor() }
-        if isTitleBlinking { return NSColor.redColor()   }
-        else               { return NSColor.blackColor() }
+        if isMenuVisible   { return NSColor.white }
+        if isTitleBlinking { return NSColor.red   }
+        else               { return NSColor.black }
     }
 
     func titleBoundingRect() -> NSRect {
         // TODO: boundingRectWithSize(options:attributes:) is deprecated; replace appropriately
         let infiniteSize = NSMakeSize(CGFloat.infinity, CGFloat.infinity)
-        return (title as NSString).boundingRectWithSize(infiniteSize,
+        return (title as NSString).boundingRect(with: infiniteSize,
             options: NSStringDrawingOptions(rawValue: 0),
             attributes: titleAttributes())
     }
 
-    override func drawLayer(layer: CALayer, inContext ctx: CGContext) {
+    // MARK: CALayerDelegate
+
+    func drawLayer(layer: CALayer, inContext ctx: CGContext) {
         // Set up graphics context so that we can use Application Kit drawing functions
-        let nsGraphicsContext = NSGraphicsContext(CGContext: ctx, flipped: false)
+        let nsGraphicsContext = NSGraphicsContext(cgContext: ctx, flipped: false)
 
         NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.setCurrentContext(nsGraphicsContext)
+        NSGraphicsContext.setCurrent(nsGraphicsContext)
 
         if layer == backgroundLayer {
             drawBackground()
@@ -216,7 +218,7 @@ class StatusItemView: NSView, NSMenuDelegate {
 
     func drawBackground() {
         if let statusItem = statusItem {
-            statusItem.drawStatusBarBackgroundInRect(self.bounds, withHighlight: isMenuVisible)
+            statusItem.drawStatusBarBackground(in: self.bounds, withHighlight: isMenuVisible)
         }
     }
 
@@ -224,32 +226,32 @@ class StatusItemView: NSView, NSMenuDelegate {
         let position = NSMakePoint(
             StatusItemView.TitlePaddingWidth,
             StatusItemView.TitlePaddingHeight)
-        (title as NSString).drawAtPoint(position, withAttributes: titleAttributes())
+        (title as NSString).draw(at: position, withAttributes: titleAttributes())
     }
 
     // MARK: Mouse and menu handling
 
-    override func mouseDown(theEvent: NSEvent) {
+    override func mouseDown(with event: NSEvent) {
         if let menu = menu {
             menu.delegate = self
             if let statusItem = statusItem {
-                statusItem.popUpStatusItemMenu(menu)
+                statusItem.popUpMenu(menu)
             }
             else {
-                Log.error("statusItem property not set")
+                Log.error(message: "statusItem property not set")
             }
         }
         else {
-            Log.error("menu property not set")
+            Log.error(message: "menu property not set")
         }
     }
 
-    override func rightMouseDown(theEvent: NSEvent) {
+    override func rightMouseDown(with event: NSEvent) {
         // Treat right-click just like left-click
-        mouseDown(theEvent)
+        mouseDown(with: event)
     }
 
-    func menuWillOpen(menu: NSMenu) {
+    func menuWillOpen(_ menu: NSMenu) {
         isMenuVisible = true
 
         // Disable animation for the following changes
@@ -265,14 +267,14 @@ class StatusItemView: NSView, NSMenuDelegate {
         }
         else {
             // Hide the normal icon and show the highlighted icon
-            iconLayer.hidden = true
-            highlightIconLayer.hidden = false
+            iconLayer.isHidden = true
+            highlightIconLayer.isHidden = false
         }
 
         CATransaction.commit()
     }
 
-    func menuDidClose(menu: NSMenu) {
+    func menuDidClose(_ menu: NSMenu) {
         isMenuVisible = false
         menu.delegate = nil
 
@@ -290,8 +292,8 @@ class StatusItemView: NSView, NSMenuDelegate {
         }
         else {
             // Show the normal icon and hide the highlighted icon
-            iconLayer.hidden = false
-            highlightIconLayer.hidden = true
+            iconLayer.isHidden = false
+            highlightIconLayer.isHidden = true
         }
 
         CATransaction.commit()

@@ -24,20 +24,20 @@ import Cocoa
 
 // MARK: Create layer from image resource
 extension CALayer {
-    static func createImageNamed(name: String) -> CGImageRef? {
-        var image: CGImageRef? = nil
+    static func createImageNamed(name: String) -> CGImage? {
+        var image: CGImage? = nil
 
-        if let path = NSBundle.mainBundle().pathForResource(name, ofType: nil) {
-            let url = NSURL.fileURLWithPath(path)
-            if let imageSource = CGImageSourceCreateWithURL(url, nil) {
+        if let path = Bundle.main.path(forResource: name, ofType: nil) {
+            let url = NSURL.fileURL(withPath: path)
+            if let imageSource = CGImageSourceCreateWithURL(url as CFURL, nil) {
                 image = CGImageSourceCreateImageAtIndex(imageSource, 0, nil)
             }
             else {
-                Log.error("CGImageSourceCreateWithURL failed")
+                Log.error(message: "CGImageSourceCreateWithURL failed")
             }
         }
         else {
-            Log.error("unable to load image from file \(name)")
+            Log.error(message: "unable to load image from file \(name)")
         }
 
         return image
@@ -45,20 +45,22 @@ extension CALayer {
 
     static func newLayerWithContentsFromFileNamed(name: String) -> CALayer {
         let newLayer = CALayer()
-        newLayer.setContentsFromFileNamed(name)
+        newLayer.setContentsFromFileNamed(name: name)
         return newLayer
     }
 
     func setContentsFromFileNamed(name: String) {
-        if let image = CALayer.createImageNamed(name) {
-            let imageWidth = CGImageGetWidth(image)
-            let imageHeight = CGImageGetHeight(image)
-
-            self.bounds = CGRectMake(0.0, 0.0, CGFloat(imageWidth), CGFloat(imageHeight))
+        if let image = CALayer.createImageNamed(name: name) {
+            self.bounds = CGRect(
+                x: 0.0,
+                y: 0.0,
+                width: CGFloat(image.width),
+                height: CGFloat(image.height)
+            )
             self.contents = image
         }
         else {
-            Log.error("unable to set contents from file \(name)")
+            Log.error(message: "unable to set contents from file \(name)")
         }
     }
 }
@@ -66,8 +68,8 @@ extension CALayer {
 // MARK: Layer coordinate system
 extension CALayer {
     func orientBottomLeft() {
-        self.anchorPoint = CGPointZero
-        self.position = CGPointZero
+        self.anchorPoint = CGPoint.zero
+        self.position = CGPoint.zero
         self.contentsGravity = kCAGravityBottomLeft
     }
 }
@@ -77,26 +79,26 @@ extension CALayer {
     @nonobjc static let BlinkAnimationKey = "CALayer_Additions_BlinkAnimation"
 
     func addBlinkAnimation() {
-        if let _ = animationForKey(CALayer.BlinkAnimationKey) {
+        if let _ = animation(forKey: CALayer.BlinkAnimationKey) {
             return
         }
 
-        let animation = CABasicAnimation(keyPath: "opacity")
+        let blinkAnimation = CABasicAnimation(keyPath: "opacity")
 
         // Repeat forever, once per second
-        animation.repeatCount = Float.infinity
-        animation.duration = 0.5
-        animation.autoreverses = true
+        blinkAnimation.repeatCount = Float.infinity
+        blinkAnimation.duration = 0.5
+        blinkAnimation.autoreverses = true
 
         // Cycle between 0 and full opacity
-        animation.fromValue = 0.0
-        animation.toValue = 1.0
-        animation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
+        blinkAnimation.fromValue = 0.0
+        blinkAnimation.toValue = 1.0
+        blinkAnimation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
 
-        addAnimation(animation, forKey: CALayer.BlinkAnimationKey)
+        add(blinkAnimation, forKey: CALayer.BlinkAnimationKey)
     }
 
     func removeBlinkAnimation() {
-        removeAnimationForKey(CALayer.BlinkAnimationKey)
+        removeAnimation(forKey: CALayer.BlinkAnimationKey)
     }
 }

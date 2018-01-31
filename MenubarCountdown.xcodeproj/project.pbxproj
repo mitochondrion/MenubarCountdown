@@ -29,7 +29,7 @@
 		4EB204351BED89F900D83EF3 /* MenubarCountdownTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB204341BED89F900D83EF3 /* MenubarCountdownTests.swift */; };
 		4EB204401BED89F900D83EF3 /* MenubarCountdownUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB2043F1BED89F900D83EF3 /* MenubarCountdownUITests.swift */; };
 		4EB2044E1BED908300D83EF3 /* Stopwatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB2044D1BED908300D83EF3 /* Stopwatch.swift */; };
-		4EB204501BEE29D700D83EF3 /* UserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB2044F1BEE29D700D83EF3 /* UserDefaults.swift */; };
+		4EB204501BEE29D700D83EF3 /* KJUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB2044F1BEE29D700D83EF3 /* KJUserDefaults.swift */; };
 		4EB204521BEE2E8B00D83EF3 /* StatusItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB204511BEE2E8B00D83EF3 /* StatusItemView.swift */; };
 		4EB204541BEE307900D83EF3 /* CALayerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB204531BEE307900D83EF3 /* CALayerExtensions.swift */; };
 /* End PBXBuildFile section */
@@ -82,7 +82,7 @@
 		4EB2043F1BED89F900D83EF3 /* MenubarCountdownUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenubarCountdownUITests.swift; sourceTree = "<group>"; };
 		4EB204411BED89F900D83EF3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4EB2044D1BED908300D83EF3 /* Stopwatch.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stopwatch.swift; sourceTree = "<group>"; };
-		4EB2044F1BEE29D700D83EF3 /* UserDefaults.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserDefaults.swift; sourceTree = "<group>"; };
+		4EB2044F1BEE29D700D83EF3 /* KJUserDefaults.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KJUserDefaults.swift; sourceTree = "<group>"; };
 		4EB204511BEE2E8B00D83EF3 /* StatusItemView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusItemView.swift; sourceTree = "<group>"; };
 		4EB204531BEE307900D83EF3 /* CALayerExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CALayerExtensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -191,7 +191,7 @@
 				4E4865991BEE79EA00C159BF /* TextField.swift */,
 				4E4865B21BEFC63700C159BF /* TimerExpiredAlert.xib */,
 				4E48659B1BEE81C200C159BF /* TimerExpiredAlertController.swift */,
-				4EB2044F1BEE29D700D83EF3 /* UserDefaults.swift */,
+				4EB2044F1BEE29D700D83EF3 /* KJUserDefaults.swift */,
 				4EB204241BED89F900D83EF3 /* ViewController.swift */,
 			);
 			path = MenubarCountdown;
@@ -283,7 +283,8 @@
 				TargetAttributes = {
 					4EB2041E1BED89F900D83EF3 = {
 						CreatedOnToolsVersion = 7.1;
-						DevelopmentTeam = D5E423632K;
+						DevelopmentTeam = V57VC33S78;
+						ProvisioningStyle = Automatic;
 					};
 					4EB2042F1BED89F900D83EF3 = {
 						CreatedOnToolsVersion = 7.1;
@@ -357,7 +358,7 @@
 				4E4865981BEE749E00C159BF /* StartTimerDialogController.swift in Sources */,
 				4EB204541BEE307900D83EF3 /* CALayerExtensions.swift in Sources */,
 				4E48659A1BEE79EA00C159BF /* TextField.swift in Sources */,
-				4EB204501BEE29D700D83EF3 /* UserDefaults.swift in Sources */,
+				4EB204501BEE29D700D83EF3 /* KJUserDefaults.swift in Sources */,
 				4EB204251BED89F900D83EF3 /* ViewController.swift in Sources */,
 				4E4865A11BEE880A00C159BF /* DTrace.m in Sources */,
 				4E4865961BEE721C00C159BF /* CATransactionExtensions.swift in Sources */,
@@ -444,6 +445,7 @@
 				OTHER_SWIFT_FLAGS = "-DDEBUG";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -480,6 +482,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -487,12 +490,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = V57VC33S78;
 				INFOPLIST_FILE = MenubarCountdown/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = net.kristopherjohnson.MenubarCountdown;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MenubarCountdown/MenubarCountdown-Bridging-Header.h";
 			};
 			name = Debug;
@@ -501,12 +507,15 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = V57VC33S78;
 				INFOPLIST_FILE = MenubarCountdown/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = net.kristopherjohnson.MenubarCountdown;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "MenubarCountdown/MenubarCountdown-Bridging-Header.h";
 			};
 			name = Release;

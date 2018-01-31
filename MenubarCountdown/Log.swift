@@ -26,7 +26,7 @@ struct Log {
 
     /// Log an error message
     static func error(message: String,
-        function: String = __FUNCTION__, file: String = __FILE__, line: Int32 = __LINE__)
+                      function: String = #function, file: String = #file, line: Int32 = #line)
     {
         let filename = file.lastPathComponent
 
@@ -38,7 +38,7 @@ struct Log {
 
     /// Log a debug-level message
     static func debug(message: String,
-        function: String = __FUNCTION__, file: String = __FILE__, line: Int32 = __LINE__)
+                      function: String = #function, file: String = #file, line: Int32 = #line)
     {
         #if DEBUG
             let filename = file.lastPathComponent

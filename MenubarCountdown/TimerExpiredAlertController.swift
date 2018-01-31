@@ -28,12 +28,12 @@ class TimerExpiredAlertController: NSWindowController {
     func showAlert() {
         if let w = self.window {
             w.makeFirstResponder(nil)
-            w.level = Int(CGWindowLevelForKey(.FloatingWindowLevelKey))
+            w.level = Int(CGWindowLevelForKey(.floatingWindow))
             w.center()
             w.makeKeyAndOrderFront(self)
         }
         else {
-            Log.error("no alert window")
+            Log.error(message: "no alert window")
         }
     }
 }

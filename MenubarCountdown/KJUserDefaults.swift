@@ -22,7 +22,7 @@
 
 import Foundation
 
-struct UserDefaults {
+struct KJUserDefaults {
     static let TimerHoursKey                   = "TimerHours"
     static let TimerMinutesKey                 = "TimerMinutes"
     static let TimerSecondsKey                 = "TimerSeconds"
@@ -37,16 +37,15 @@ struct UserDefaults {
     static let ShowSeconds                     = "ShowSeconds"
 
     static func registerUserDefaults() {
-        if let plistPath = NSBundle.mainBundle().pathForResource("UserDefaults", ofType: "plist") {
+        if let plistPath = Bundle.main.path(forResource: "UserDefaults", ofType: "plist") {
             if let dict = NSDictionary(contentsOfFile: plistPath) as? [String : AnyObject] {
-                NSUserDefaults.standardUserDefaults().registerDefaults(dict)
-            }
-            else {
-                Log.error("unable to load UserDefaults.plist")
+                UserDefaults.standard.register(defaults: dict)
+            } else {
+                Log.error(message: "unable to load UserDefaults.plist")
             }
         }
         else {
-            Log.error("unable to find UserDefaults.plist")
+            Log.error(message: "unable to find UserDefaults.plist")
         }
     }
 }
